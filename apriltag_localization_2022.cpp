@@ -8,6 +8,7 @@
 #include <tf/LinearMath/Vector3.h>
 #include <geometry_msgs/Transform.h>
 #include <nav_msgs/Odometry.h>
+#include "std_msgs/String.h" 
 
 using namespace std;
 using namespace ros;
@@ -22,6 +23,7 @@ int id;
 double min_distance = 100;
 double check_time[6] = {0};
 Publisher transform_pub;
+Publisher tag_number_pub;
 
 tf::StampedTransform camera_transform2;
 
@@ -39,7 +41,10 @@ void listener(){
 
       tf_listener->lookupTransform(parent_id, child_id, ros::Time(0), echo_transform);
       std::cout << "At time " << std::setprecision(16) << echo_transform.stamp_.toSec() << std::endl;
-      cout << "Frame id:" << echo_transform.frame_id_ << ", Child id:" << echo_transform.child_frame_id_ << endl;
+      cout << "Frame id:" << echo_transform.frame_id_ << ", Child id:" << echo_transform.child_frame_id_<< endl;
+      cout << echo_transform.child_frame_id_ << endl;
+      // tag_number_pub.publish(std::to_string(echo_transform.child_frame_id_)); 
+
       double yaw, pitch, roll;
       echo_transform.getBasis().getRPY(roll, pitch, yaw);
       tf::Quaternion q = echo_transform.getRotation();
@@ -88,7 +93,7 @@ void listener(){
     }
     catch (tf::TransformException& ex)
     {
-      std::cout << "Exception thrown:" << ex.what() << std::endl;
+     // std::cout << "Exception thrown:" << ex.what() << std::endl;
     }
   }
 
@@ -132,9 +137,10 @@ int main(int argc, char** argv){
   ros::init(argc, argv, "apriltag_localization");
   ros::NodeHandle nh;
   tf_listener = new tf::TransformListener();
-  
+
   // write the publisher
   transform_pub = nh.advertise<nav_msgs::Odometry>("apriltag_localization", 1); //("???", ???);
+  tag_number_pub = nh.advertise<std_msgs::String>("tag_number", 1000);  
 
   bool find = false;
 
